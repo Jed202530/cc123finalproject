@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_TITLE_LEN 50
+#define MAX_EVENTS 100
+
+
+typedef struct {
+    char title[MAX_TITLE_LEN];
+    int month, day, year;
+    int hour, minute;
+} Event;
+
+
+void addEvent(Event **events, int *count);
+void viewEvents(Event *events, int count);
+int checkConflict(Event *events, int count, int month, int day, int year, int hour, int minute);
+
+int main() {
+    Event *events = malloc(MAX_EVENTS * sizeof(Event));
+    int count = 0;
+    int choice;
+
+    do {
+        printf("\n===== Simple Event Scheduler =====\n");
+        printf("1. Add Event\n");
+        printf("2. View All Events\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        getchar(); 
+
+        switch (choice) {
+            case 1:
+                addEvent(&events, &count);
+                break;
+            case 2:
+                viewEvents(events, count);
+                break;
+            case 3:
+                printf("Goodbye!\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 3);
+
+    free(events);
+    return 0;
+}
+
+
+void addEvent(Event **events, int *count) {
+    if (*count >= MAX_EVENTS) {
+        printf("Cannot add more events. Limit reached.\n");
+        return;
+    }
+
+    Event newEvent;
+
+    printf("\nEnter event title: ");
+    fgets(newEvent.title, MAX_TITLE_LEN, stdin);
+    newEvent.title[strcspn(newEvent.title, "\n")] = '\0'; 
+
+    printf("Enter event date (MM DD YYYY): ");
+    scanf("%d %d %d", &newEvent.month, &newEvent.day, &newEvent.year);
+
+    printf("Enter event time (HH MM in 24-hour format): ");
+    scanf("%d %d", &newEvent.hour, &newEvent.minute);
+    getchar(); 
+
+    
+    if (checkConflict(*events, *count, newEvent.month, newEvent.day, newEvent.year, newEvent.hour, newEvent.minute)) {
+        printf("Conflict: Another event is already scheduled at that time.\n");
+    } else {
+        (*events)[*count] = newEvent;
+        (*count)++;
+        printf("Event added successfully!\n");
+    }
+}
+
+
+void viewEvents(Event *events, int count) {
+    if (count == 0) {
+        printf("\nNo events scheduled yet.\n");
+        return;
+    }
+
+    printf("\nAll Scheduled Events:\n");
+    printf("-----------------------------------------\n");
+    for (int i = 0; i < count; i++) {
+        printf("%d. %s\n", i + 1, events[i].title);
+        printf("   Date: %04d-%02d-%02d\n", events[i].month, events[i].day, events[i].year);
+        printf("   Time: %02d:%02d\n", events[i].hour, events[i].minute);
+        printf("-----------------------------------------\n");
+    }
+}
+
+
+int checkConflict(Event *events, int count, int month, int day, int year, int hour, int minute) {
+    for (int i = 0; i < count; i++) {
+        if (events[i].month == month &&
+            events[i].day == day &&
+            events[i].year == year &&
+            events[i].hour == hour &&
+            events[i].minute == minute) {
+            return 1; 
+        }
+    }
+    return 0; 
+}
+    
